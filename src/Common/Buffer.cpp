@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "Buffer.h"
+#include <Common/Buffer.h>
 using namespace HVFiles;
 std::shared_ptr<Buffer> HVFiles::AcquireBuffer(std::uint32_t requiredCapacity)
 {

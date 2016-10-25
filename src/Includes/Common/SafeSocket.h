@@ -1,5 +1,11 @@
 #pragma once
+#ifdef _WIN32
 #include <WinSock2.h>
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+using SOCKET = int;
+#endif
 #include <memory>
 
 namespace HVFiles {
@@ -10,7 +16,7 @@ namespace HVFiles {
 	public:
 		SafeSocket(SOCKET s);
 		SOCKET get() const{
-			return (SOCKET)_s.get();
+			return static_cast<SOCKET>(reinterpret_cast<intptr_t>( _s.get()));
 		}
 	};
 

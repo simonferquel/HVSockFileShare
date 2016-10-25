@@ -4,12 +4,12 @@
 #include "stdafx.h"
 #include <WinSock2.h>
 #include <hvsocket.h>
-#include "../ClientLib/Connect.h"
-#include "../Common/Ids.h"
+#include <ClientLib/Connect.h>
+#include <Common/Ids.h>
 #include <iostream>
-#include "../Common/messages/Header.h"
-#include "../Common/messages/Handshake.h"
-#include "../Common/messages/MessageTypes.h"
+#include <Common/messages/Header.h>
+#include <Common/messages/Handshake.h>
+#include <Common/messages/MessageTypes.h>
 using namespace HVFiles;
 using namespace std;
 int main()

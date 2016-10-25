@@ -1,7 +1,7 @@
 #pragma once
 #include <initguid.h>
 #include <Winsock2.h>
-#include "../Common/SafeSocket.h"
+#include <Common/SafeSocket.h>
 namespace HVFiles {
 	class HVListener
 	{

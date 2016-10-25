@@ -2,11 +2,11 @@
 //
 
 #include "stdafx.h"
-#include "../Common/Ids.h"
-#include "../Common/Buffer.h"
-#include "../Common/Messages/MessageTypes.h"
-#include "../Common/Messages/Header.h"
-#include "../Common/Messages/Handshake.h"
+#include <Common/Ids.h>
+#include <Common/Buffer.h>
+#include <Common/Messages/MessageTypes.h>
+#include <Common/Messages/Header.h>
+#include <Common/Messages/Handshake.h>
 #include <iostream>
 #include <exception>
 #include <WinSock2.h>
