@@ -1,12 +1,16 @@
 #pragma once
+#ifdef _WIN32
 #include <initguid.h>
+#else
+#include <Common/LinuxCompat.h>
+#endif
 namespace HVFiles {
 	// {CC795297-7EBB-45F4-92D3-0431BB574017}
-	DEFINE_GUID(SessionServiceID,
+	MAKE_GUID(SessionServiceID,
 		0xcc795297, 0x7ebb, 0x45f4, 0x92, 0xd3, 0x4, 0x31, 0xbb, 0x57, 0x40, 0x17);
 
 	// {27966F3D-A665-4C1D-9CA2-1844F36EDB0F}
-	DEFINE_GUID(CommandServiceID,
+	MAKE_GUID(CommandServiceID,
 		0x27966f3d, 0xa665, 0x4c1d, 0x9c, 0xa2, 0x18, 0x44, 0xf3, 0x6e, 0xdb, 0xf);
 
 }

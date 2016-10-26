@@ -16,6 +16,7 @@ namespace HVFiles {
 	public:
 		SafeSocket(SOCKET s);
 		SOCKET get() const{
+
 			return static_cast<SOCKET>(reinterpret_cast<intptr_t>( _s.get()));
 		}
 	};

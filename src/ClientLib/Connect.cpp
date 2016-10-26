@@ -1,4 +1,5 @@
 #include <ClientLib/Connect.h>
+#include <iostream>
 #include <exception>
 using namespace HVFiles;
 SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service)
@@ -16,10 +17,14 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service)
 
 #if _WIN32
 	if (0 != WSAConnect(s.get(), reinterpret_cast<const sockaddr*>(&addr), sizeof(addr), nullptr, nullptr, nullptr, nullptr)) {
+		
 		throw std::exception("Unable to connect");
 	}
 #else
-	if (0 != connect(s.get(), reinterpret_cast<const sockaddr*>(&addr), sizeof(addr))) {
+	if (0 != connect(s.get(), reinterpret_cast<const sockaddr*>(&addr), sizeof(SOCKADDR_HV))) {
+
+		auto err = errno;
+		std::cerr<<"errno is "<<err<<std::endl;
 		throw std::exception();
 	}
 #endif

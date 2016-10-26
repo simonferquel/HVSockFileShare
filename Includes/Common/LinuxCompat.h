@@ -21,12 +21,12 @@ typedef struct _GUID {
 
 /* HV Socket definitions */
 
-#define AF_HYPERV 43
+#define AF_HYPERV AF_X25
 
 #define HV_PROTOCOL_RAW 1
 
 
-
+#pragma pack(push,1)
 typedef struct _SOCKADDR_HV
 
 {
@@ -40,7 +40,7 @@ typedef struct _SOCKADDR_HV
 	GUID ServiceId;
 
 } SOCKADDR_HV;
-
+#pragma pack(pop)
 
 
 
