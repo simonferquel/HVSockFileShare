@@ -1,10 +1,10 @@
 #include <Common/SafeSocket.h>
+#include <iostream>
 #ifdef _WIN32
 #else
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <iostream>
 #define closesocket close
 #endif
 
