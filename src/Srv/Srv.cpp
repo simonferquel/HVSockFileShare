@@ -14,7 +14,7 @@
 #include <Winreg.h> 
 #include <exception>
 #include <hvsocket.h>
-#include "../SrvLib/HVListener.h"
+#include "../SrvLib/FileServer.h"
 
 using namespace std;
 using namespace HVFiles;
@@ -76,33 +76,13 @@ int wmain(int argc, wchar_t* argv[])
 		return -2;
 	}
 
-	HVListener sessionListener(HV_GUID_WILDCARD, HVFiles::SessionServiceID);
-	auto s = sessionListener.Accept();
+	FileServer fs("c:\\", HV_GUID_WILDCARD, SessionServiceID, CommandServiceID);
+	fs.Start();
 
-	Messages::Header header;
-	WSABUF buf;
-	buf.len = sizeof(header);
-	buf.buf = reinterpret_cast<char*>(&header);
-	DWORD read = 0;
-	DWORD flags = MSG_WAITALL;
-	if (SOCKET_ERROR == WSARecv(s.get(), &buf, 1, &read, &flags , nullptr, nullptr)) {
-		throw std::exception("unable to recv head");
-	}
-	Buffer b(header.size);
-	buf.len = header.size;
-	buf.buf = reinterpret_cast<char*>(b.begin());
-	if (SOCKET_ERROR == WSARecv(s.get(), &buf, 1, &read, &flags, nullptr, nullptr)) {
-		throw std::exception("unable to recv head");
-	}
-	b.size(read);
-	auto hs = reinterpret_cast<Messages::Handshake*>(b.begin());
-	Messages::HandshakeResponse r;
-	r.protocolVersion = hs->maxProtocolVersion;
-	GUID id;
-	CoCreateGuid(&id);
-	memcpy(&r.sessionId, &id, sizeof(id));
-	header.size = sizeof(r);
-	header.type = Messages::MessageTypes::HandshakeResponse;
+	cout << "Press enter to stop...";
+	std::string v;
+	cin >> v;
+	fs.Stop();
 
 
     return 0;

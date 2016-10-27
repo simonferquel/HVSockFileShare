@@ -22,12 +22,26 @@ HVFiles::HVListener::HVListener(const GUID & partitionId, const GUID & serviceId
 	}
 }
 
+void HVFiles::HVListener::Close()
+{
+	std::lock_guard<std::mutex> lg(_mut);
+	if (_socket != INVALID_SOCKET) {
+		closesocket(_socket);
+		_socket = INVALID_SOCKET;
+	}
+}
+
 HVFiles::HVListener::~HVListener()
 {
-	closesocket(_socket);
+	Close();
 }
 
 SafeSocket HVFiles::HVListener::Accept()
 {
-	return WSAAccept(_socket, nullptr, nullptr, nullptr, (DWORD_PTR)nullptr);
+	SOCKET s;
+	{
+		std::lock_guard<std::mutex> lg(_mut);
+		s = _socket;
+	}
+	return WSAAccept(s, nullptr, nullptr, nullptr, (DWORD_PTR)nullptr);
 }

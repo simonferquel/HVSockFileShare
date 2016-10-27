@@ -27,12 +27,30 @@
     <ClInclude Include="HVListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HVListener.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
