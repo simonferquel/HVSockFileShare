@@ -3,6 +3,8 @@
 #include <Common/messages/Header.h>
 #include <Common/messages/MessageTypes.h>
 #include <Common/messages/Handshake.h>
+#include <Common/messages/Echo.h>
+#include <Common/Buffer.h>
 #include <iostream>
 using namespace HVFiles;
 using namespace HVFiles::Messages;
@@ -30,4 +32,35 @@ void HVFiles::Session::Start()
 	response.protocolVersion = 1;
 	response.sessionId = _id;
 	_s.WriteWithHeaderFixedSize(response);
+}
+void HandleEcho(const SafeSocket& s) {
+	auto cmd = s.ReadFixedSize<Echo>();
+	auto buf = AcquireBuffer(cmd.dataSize);
+	s.ReadDataAsync(cmd.dataSize, buf)
+		.then([s](const concurrency::task<std::shared_ptr<Buffer>>t) {
+		try {
+			auto buf = t.get();
+			EchoResponse r;
+			r.dataSize = buf->size();
+			s.WriteDataAsync(buf);
+		}
+		catch(...){
+			// handle failure gracefully
+		}
+	});
+}
+void HVFiles::Session::OnCommandAccepted(const SafeSocket & commandSocket)
+{
+	auto header = commandSocket.ReadFixedSize<Header>();
+	
+	switch (header.type)
+	{
+	case MessageTypes::Echo:
+		if (header.size == sizeof(Echo)) {
+			HandleEcho(commandSocket);
+		}
+		break;
+	default:
+		break;
+	}
 }

@@ -6,6 +6,8 @@
 #include "Session.h"
 #include <initguid.h>
 #include <combaseapi.h>
+#include <Common/messages/Header.h>
+#include <Common/messages/Join.h>
 using namespace HVFiles;
 using namespace concurrency;
 
@@ -85,4 +87,16 @@ void OnSessionAccepted(SafeSocket && s, const std::shared_ptr<SessionPool>& pool
 
 void OnCommandAccepted(SafeSocket && s, const std::shared_ptr<SessionPool>& pool)
 {
+	create_task([s = std::move(s), pool]() {
+		auto h = s.ReadFixedSize<Messages::Header>();
+		if(h.type != Messages::MessageTypes::Join || h.size != sizeof(Messages::Join)){
+			return;
+		}
+		auto j = s.ReadFixedSize<Messages::Join>();
+		try {
+			auto session = pool->FindSession(j.session);
+			session->OnCommandAccepted(s);
+		}
+		catch(SessionNotFoundException&){}
+	});
 }

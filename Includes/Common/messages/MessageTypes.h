@@ -6,7 +6,10 @@ namespace HVFiles {
 			Handshake,
 			HandshakeResponse,
 			Ping,
-			PingResponse
+			PingResponse,
+			Join,
+			Echo,
+			EchoResponse
 		};
 	}
 }

@@ -84,6 +84,8 @@
     <ClCompile Include="SafeSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Includes\Common\messages\Echo.h" />
+    <ClInclude Include="..\..\Includes\Common\messages\Join.h" />
     <ClInclude Include="..\Includes\Common\Buffer.h" />
     <ClInclude Include="..\Includes\Common\Ids.h" />
     <ClInclude Include="..\Includes\Common\LinuxCompat.h" />

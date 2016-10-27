@@ -1,6 +1,7 @@
 #pragma once
 #ifdef _WIN32
 #include <WinSock2.h>
+#include <ppltasks.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -10,6 +11,7 @@ using SOCKET = int;
 #include <iostream>
 #include <Common/messages/Header.h>
 #include <Common/messages/MessageTypes.h>
+#include <Common/Buffer.h>
 namespace HVFiles {
 	class SafeSocket
 	{
@@ -23,7 +25,7 @@ namespace HVFiles {
 		}
 
 		template<typename T>
-		T ReadFixedSize() {
+		T ReadFixedSize() const {
 			T result;
 #ifdef _WIN32
 			WSABUF buf;
@@ -49,8 +51,14 @@ namespace HVFiles {
 			return result;
 		}
 
+#if _WIN32
+		concurrency::task<std::shared_ptr<Buffer>> ReadDataAsync(std::uint32_t size, const std::shared_ptr<Buffer>& b) const;
+		concurrency::task<void> WriteDataAsync(const std::shared_ptr<Buffer>& b) const;
+#endif
+		
+
 		template<typename T>
-		void WriteWithHeaderFixedSize(const T& value) {
+		void WriteWithHeaderFixedSize(const T& value) const {
 			Messages::Header h;
 			h.type = T::type();
 			h.size = sizeof(T);

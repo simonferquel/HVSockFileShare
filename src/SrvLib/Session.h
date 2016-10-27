@@ -10,5 +10,6 @@ namespace HVFiles {
 		Session(const GUID& id, const SafeSocket& s);
 		void Start();
 		GUID id() const { return _id; }
+		void OnCommandAccepted(const SafeSocket& commandSocket);
 	};
 }
