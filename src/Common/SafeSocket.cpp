@@ -3,6 +3,7 @@
 #include <algorithm>
 #ifdef _WIN32
 #define poll WSAPoll
+#define MSG_DONTWAIT 0 
 #else
 #include <unistd.h>
 #include <sys/types.h>
@@ -134,15 +135,7 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
 	if (b.remainingSize() < size) {
 		throw std::exception();
 	}
-#ifdef _WIN32
-	auto read = recv(get(), reinterpret_cast<char*>(b.end()), size, MSG_WAITALL);
-	b.size(b.size() + read);
-	if (read < size) {
-		auto err = errno;
-		std::cerr << "recv failed : " << err << std::endl;
-		throw std::exception();
-	}
-#else
+
 	size_t totalRead = 0;
     pollfd pollInfo = {0};
     pollInfo.fd = get();
@@ -153,7 +146,16 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
             auto localSize = size;
             if(localSize>MAX_WRITE_SIZE)localSize = MAX_WRITE_SIZE;
             if ((read = recv(get(), reinterpret_cast<char*>(b.end() + totalRead), localSize, MSG_DONTWAIT)) < 0) {
-
+#ifdef _WIN32
+				auto err = WSAGetLastError();
+				if (err == WSAEWOULDBLOCK || err == WSAEFAULT) {
+					pollInfo.revents = 0;
+					poll(&pollInfo, 1, -1);
+					continue;
+				}
+				std::cerr << "recv failed : " << err << std::endl;
+				throw std::exception();
+#else
                 auto err = errno;
                 if(err == EWOULDBLOCK || err == EAGAIN){
                     pollInfo.revents = 0;
@@ -162,6 +164,7 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
                 }
                 std::cerr << "recv failed : " << err << std::endl;
                 throw std::exception();
+#endif
             }
             if(read==0){
                 throw std::exception();
@@ -169,7 +172,7 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
             totalRead += read;
 	}
 	b.size(b.size()+totalRead);
-#endif
+
 }
 
 void HVFiles::SafeSocket::WriteData(const Buffer& b)const {
