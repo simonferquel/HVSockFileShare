@@ -149,13 +149,17 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
     pollInfo.events = POLLIN;
 	while(totalRead < size) {
         pollInfo.revents = 0;
-        poll(&pollInfo,1, -1);
-        if(pollInfo.revents & POLLIN) {
             int read;
             auto localSize = size;
             if(localSize>MAX_WRITE_SIZE)localSize = MAX_WRITE_SIZE;
-            if ((read = recv(get(), reinterpret_cast<char*>(b.end() + totalRead), localSize, 0)) < 0) {
+            if ((read = recv(get(), reinterpret_cast<char*>(b.end() + totalRead), localSize, MSG_DONTWAIT)) < 0) {
+
                 auto err = errno;
+                if(err == EWOULDBLOCK || err == EAGAIN){
+                    pollInfo.revents = 0;
+                    poll(&pollInfo,1,-1);
+                    continue;
+                }
                 std::cerr << "recv failed : " << err << std::endl;
                 throw std::exception();
             }
@@ -163,10 +167,6 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
                 throw std::exception();
             }
             totalRead += read;
-        }
-        else{
-            throw std::exception();
-        }
 	}
 	b.size(b.size()+totalRead);
 #endif
@@ -175,10 +175,18 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
 void HVFiles::SafeSocket::WriteData(const Buffer& b)const {
 #undef min
 	size_t totalWritten = 0;
+    pollfd pollInfo = {0};
+    pollInfo.fd = get();
+    pollInfo.events = POLLOUT;
 	while(totalWritten<b.size()) {
 		int written;
-		if ((written = send(get(), reinterpret_cast<const char*>(b.begin()+totalWritten), std::min(MAX_WRITE_SIZE, b.size()-totalWritten), 0)) <0) {
+		if ((written = send(get(), reinterpret_cast<const char*>(b.begin()+totalWritten), std::min(MAX_WRITE_SIZE, b.size()-totalWritten), MSG_DONTWAIT)) <0) {
 			auto err = errno;
+            if(err == EWOULDBLOCK || err == EAGAIN){
+                pollInfo.revents = 0;
+                poll(&pollInfo,1,-1);
+                continue;
+            }
 			std::cerr << "send failed : " << err << std::endl;
 			throw std::exception();
 		}

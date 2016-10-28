@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cstring>
 #include <thread>
+#include <chrono>
 
 using namespace HVFiles;
 
@@ -40,6 +41,8 @@ int main(){
 }
 
 int DoEcho(Messages::Header responseHeader, Messages::HandshakeResponse response) {
+    std::cout << "echo..."<<std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
     auto commSock = Connect(HV_GUID_ZERO, CommandServiceID);
     commSock.WriteWithHeaderFixedSize(Messages::Join{response.sessionId});
     auto sendBuf = AcquireBuffer(512u*1024u*1024u);
@@ -60,11 +63,15 @@ int DoEcho(Messages::Header responseHeader, Messages::HandshakeResponse response
     }
     auto respBuf = AcquireBuffer(echoResp.dataSize);
     commSock.ReadData(echoResp.dataSize, *respBuf);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto durationMS = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
     auto cmpRes = memcmp(sendBuf->begin(), respBuf->begin(), echoResp.dataSize);
     if(cmpRes!=0){
 
         std::cerr << "data mismatch" << std::endl;
         return -1;
     }
+    std::cout << "echo succeeded in "<<durationMS.count()<<"ms"<<std::endl;
     return 0;
 }
