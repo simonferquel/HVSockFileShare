@@ -42,7 +42,10 @@ void HandleEcho(const SafeSocket& s) {
 			auto buf = t.get();
 			EchoResponse r;
 			r.dataSize = buf->size();
-			s.WriteDataAsync(buf);
+			s.WriteWithHeaderFixedSize(r);
+			s.WriteDataAsync(buf).then([]() {
+				std::cout << "echoed back" << std::endl;
+			});
 		}
 		catch(...){
 			// handle failure gracefully
