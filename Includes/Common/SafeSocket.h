@@ -59,6 +59,8 @@ namespace HVFiles {
 		void ReadData(std::uint32_t size, Buffer& b) const;
 		void WriteData(const Buffer& b) const;
 
+		void ReadToEndMobyStyle(std::function<void(const std::uint8_t*, std::uint32_t size)> callback) const;
+
 		template<typename T>
 		void WriteWithHeaderFixedSize(const T& value) const {
 			Messages::Header h;
