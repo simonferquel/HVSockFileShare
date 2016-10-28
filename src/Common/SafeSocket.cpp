@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <poll.h>
 #define closesocket close
 #endif
 using namespace HVFiles;
@@ -89,4 +90,53 @@ concurrency::task<void> HVFiles::SafeSocket::WriteDataAsync(const std::shared_pt
 
 	return concurrency::create_task(tce);
 }
+#else
+void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b){
+	if (b.remainingSize() < size) {
+		throw std::exception();
+	}
+	ssize_t totalRead = 0;
+    pollfd pollInfo = {0};
+    pollInfo.fd = get();
+    pollInfo.events = POLLIN;
+	while(totalRead < size) {
+        pollInfo.revents = 0;
+        poll(&pollInfo,1, -1);
+        if(pollInfo.revents & POLLIN) {
+            ssize_t read;
+            auto localSize = size;
+            if(localSize>12288)localSize = 12288;
+            if ((read = recv(get(), b.end() + totalRead, localSize, 0)) < 0) {
+                auto err = errno;
+                std::cerr << "recv failed : " << err << std::endl;
+                throw std::exception();
+            }
+            if(read==0){
+                throw std::exception();
+            }
+            totalRead += read;
+        }
+        else{
+            throw std::exception();
+        }
+	}
+	b.size(b.size()+totalRead);
+}
+
+void HVFiles::SafeSocket::WriteData(const Buffer& b){
+
+	ssize_t totalWritten = 0;
+	while(totalWritten<b.size()) {
+		ssize_t written;
+		if ((written = send(get(), b.begin()+totalWritten, b.size()-totalWritten, 0)) <0) {
+			auto err = errno;
+			std::cerr << "send failed : " << err << std::endl;
+			throw std::exception();
+		}
+		totalWritten+=written;
+	}
+}
+
+
+
 #endif
