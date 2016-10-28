@@ -1,6 +1,8 @@
 #include <Common/SafeSocket.h>
 #include <iostream>
+#include <algorithm>
 #ifdef _WIN32
+#define poll WSAPoll
 #else
 #include <unistd.h>
 #include <sys/types.h>
@@ -9,7 +11,7 @@
 #define closesocket close
 #endif
 using namespace HVFiles;
-const uint32_t MAX_WRITE_SIZE= 12288;
+const size_t MAX_WRITE_SIZE= 12288;
 HVFiles::SafeSocket::SafeSocket(SOCKET s)
 {
 	if(s == -1){
@@ -67,7 +69,7 @@ void CALLBACK WriteDataAsyncCallback(
 	else {
 #undef min
 		WSABUF buf;
-		buf.len = std::min(MAX_WRITE_SIZE, capture->b->size()- capture->totalWritten);
+		buf.len = std::min(MAX_WRITE_SIZE, (size_t)(capture->b->size()- capture->totalWritten));
 		buf.buf = reinterpret_cast<char*>(capture->b->begin()+capture->totalWritten);
 		concurrency::task_completion_event<void> tce;
 		DWORD written = 0;
@@ -111,7 +113,7 @@ concurrency::task<std::shared_ptr<Buffer>> HVFiles::SafeSocket::ReadDataAsync(st
 concurrency::task<void> HVFiles::SafeSocket::WriteDataAsync(const std::shared_ptr<Buffer>& b) const {
 #undef min
 	WSABUF buf;
-	buf.len = std::min(MAX_WRITE_SIZE, b->size());
+	buf.len = std::min(MAX_WRITE_SIZE, (size_t)b->size());
 	buf.buf = reinterpret_cast<char*>(b->begin());
 	concurrency::task_completion_event<void> tce;
 	auto o = new _WriteAsyncCapture(b, tce, *this);
@@ -127,12 +129,21 @@ concurrency::task<void> HVFiles::SafeSocket::WriteDataAsync(const std::shared_pt
 
 	return concurrency::create_task(tce);
 }
-#else
-void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b){
+#endif
+void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
 	if (b.remainingSize() < size) {
 		throw std::exception();
 	}
-	ssize_t totalRead = 0;
+#ifdef _WIN32
+	auto read = recv(get(), reinterpret_cast<char*>(b.end()), size, MSG_WAITALL);
+	b.size(b.size() + read);
+	if (read < size) {
+		auto err = errno;
+		std::cerr << "recv failed : " << err << std::endl;
+		throw std::exception();
+	}
+#else
+	size_t totalRead = 0;
     pollfd pollInfo = {0};
     pollInfo.fd = get();
     pollInfo.events = POLLIN;
@@ -140,10 +151,10 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b){
         pollInfo.revents = 0;
         poll(&pollInfo,1, -1);
         if(pollInfo.revents & POLLIN) {
-            ssize_t read;
+            int read;
             auto localSize = size;
-            if(localSize>12288)localSize = 12288;
-            if ((read = recv(get(), b.end() + totalRead, localSize, 0)) < 0) {
+            if(localSize>MAX_WRITE_SIZE)localSize = MAX_WRITE_SIZE;
+            if ((read = recv(get(), reinterpret_cast<char*>(b.end() + totalRead), localSize, 0)) < 0) {
                 auto err = errno;
                 std::cerr << "recv failed : " << err << std::endl;
                 throw std::exception();
@@ -158,14 +169,15 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b){
         }
 	}
 	b.size(b.size()+totalRead);
+#endif
 }
 
-void HVFiles::SafeSocket::WriteData(const Buffer& b){
-
-	ssize_t totalWritten = 0;
+void HVFiles::SafeSocket::WriteData(const Buffer& b)const {
+#undef min
+	size_t totalWritten = 0;
 	while(totalWritten<b.size()) {
-		ssize_t written;
-		if ((written = send(get(), b.begin()+totalWritten, b.size()-totalWritten, 0)) <0) {
+		int written;
+		if ((written = send(get(), reinterpret_cast<const char*>(b.begin()+totalWritten), std::min(MAX_WRITE_SIZE, b.size()-totalWritten), 0)) <0) {
 			auto err = errno;
 			std::cerr << "send failed : " << err << std::endl;
 			throw std::exception();
@@ -174,6 +186,3 @@ void HVFiles::SafeSocket::WriteData(const Buffer& b){
 	}
 }
 
-
-
-#endif

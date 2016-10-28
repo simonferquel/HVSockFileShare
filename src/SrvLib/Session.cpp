@@ -36,21 +36,12 @@ void HVFiles::Session::Start()
 void HandleEcho(const SafeSocket& s) {
 	auto cmd = s.ReadFixedSize<Echo>();
 	auto buf = AcquireBuffer(cmd.dataSize);
-	s.ReadDataAsync(cmd.dataSize, buf)
-		.then([s](const concurrency::task<std::shared_ptr<Buffer>>t) {
-		try {
-			auto buf = t.get();
-			EchoResponse r;
-			r.dataSize = buf->size();
-			s.WriteWithHeaderFixedSize(r);
-			s.WriteDataAsync(buf).then([]() {
-				std::cout << "echoed back" << std::endl;
-			});
-		}
-		catch(...){
-			// handle failure gracefully
-		}
-	});
+	s.ReadData(cmd.dataSize, *buf);
+	EchoResponse r;
+	r.dataSize = buf->size();
+	s.WriteWithHeaderFixedSize(r);
+	s.WriteData(*buf);
+
 }
 void HVFiles::Session::OnCommandAccepted(const SafeSocket & commandSocket)
 {

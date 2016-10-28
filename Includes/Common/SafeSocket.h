@@ -54,11 +54,10 @@ namespace HVFiles {
 #if _WIN32
 		concurrency::task<std::shared_ptr<Buffer>> ReadDataAsync(std::uint32_t size, const std::shared_ptr<Buffer>& b) const;
 		concurrency::task<void> WriteDataAsync(const std::shared_ptr<Buffer>& b) const;
-#else
-        void ReadData(std::uint32_t size, Buffer& b);
-        void WriteData(const Buffer& b);
+
 #endif
-		
+		void ReadData(std::uint32_t size, Buffer& b) const;
+		void WriteData(const Buffer& b) const;
 
 		template<typename T>
 		void WriteWithHeaderFixedSize(const T& value) const {
