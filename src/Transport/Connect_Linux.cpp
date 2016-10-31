@@ -1,5 +1,6 @@
 #include <Transport/Connect.h>
 #include <fcntl.h>
+#include <poll.h>
 
 using namespace HVFiles;
 SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
@@ -16,13 +17,13 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
 		if (err != EINPROGRESS) {
 			throw ConnectionFailedException(err);
 		}
-		fd_set fds;
-		FD_ZERO(&fds);
-		FD_SET(s.get(), &fds);
+		pollfd pollInfo = { 0 };
+		pollInfo.fd = s.get();
+		pollInfo.events = POLLOUT;
 		timeval timeout;
 		timeout.tv_sec = 0;
-		timeout.tv_usec = 1000 * 30; // 30ms is long enough for hv_socks
-		if (select(1, nullptr, &fds, nullptr, &timeout) != 1) {
+		auto presults = poll(&pollInfo, 1, 30);
+		if (presults != 1) {
 			// timeout 
 			throw ConnectionFailedException(err);
 		}
