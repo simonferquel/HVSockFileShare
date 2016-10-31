@@ -79,9 +79,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="FileServer.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="SessionPool.h" />
