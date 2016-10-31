@@ -1,4 +1,6 @@
 #include <Transport/Connect.h>
+#include <fcntl.h>
+
 using namespace HVFiles;
 SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
     SafeSocket s = socket(AF_HYPERV, SOCK_STREAM, HV_PROTOCOL_RAW);
