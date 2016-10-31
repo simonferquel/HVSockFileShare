@@ -42,12 +42,15 @@ int main(){
 
 int DoEcho(Messages::Header responseHeader, Messages::HandshakeResponse response) {
     std::cout << "echo..."<<std::endl;
-    auto start = std::chrono::high_resolution_clock::now();
+
     auto commSock = Connect(HV_GUID_ZERO, CommandServiceID);
     commSock.WriteWithHeaderFixedSize(Messages::Join{response.sessionId});
     auto sendBuf = AcquireBuffer(512u*1024u*1024u);
+
+    auto respBuf = AcquireBuffer(512u*1024u*1024u);
     sendBuf->size(512u*1024u*1024u);
     commSock.WriteWithHeaderFixedSize(Messages::Echo{.dataSize = sendBuf->size()});
+    auto start = std::chrono::high_resolution_clock::now();
     commSock.WriteData(*sendBuf);
     responseHeader = commSock.ReadFixedSize<Messages::Header>();
     if(responseHeader.type != Messages::MessageTypes::EchoResponse){
@@ -61,7 +64,6 @@ int DoEcho(Messages::Header responseHeader, Messages::HandshakeResponse response
         std::cerr << "size mismatch" << std::endl;
         return -1;
     }
-    auto respBuf = AcquireBuffer(echoResp.dataSize);
     commSock.ReadData(echoResp.dataSize, *respBuf);
 
     auto end = std::chrono::high_resolution_clock::now();

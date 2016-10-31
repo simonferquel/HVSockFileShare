@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <poll.h>
+#include <sys/epoll.h>
 #define closesocket close
 #endif
 using namespace HVFiles;
@@ -137,6 +138,7 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
 	}
 
 	size_t totalRead = 0;
+#ifdef _WIN32
     pollfd pollInfo = {0};
     pollInfo.fd = get();
     pollInfo.events = POLLIN;
@@ -146,7 +148,7 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
             auto localSize = size;
             if(localSize>MAX_WRITE_SIZE)localSize = MAX_WRITE_SIZE;
             if ((read = recv(get(), reinterpret_cast<char*>(b.end() + totalRead), localSize, MSG_DONTWAIT)) < 0) {
-#ifdef _WIN32
+
 				auto err = WSAGetLastError();
 				if (err == WSAEWOULDBLOCK || err == WSAEFAULT) {
 					pollInfo.revents = 0;
@@ -156,25 +158,36 @@ void HVFiles::SafeSocket::ReadData(std::uint32_t size, Buffer& b)const {
 				std::cerr << "recv failed : " << err << std::endl;
 				throw std::exception();
 #else
-                auto err = errno;
+    int ep = epoll_create(0);
+    epoll_event waitedEvent = {.events = EPOLLIN|EPOLLET}, raisedEvents;
+    epoll_ctl(ep, EPOLL_CTL_ADD, get(), &waitedEvent);
+
+    while(totalRead < size) {
+        int read;
+        auto localSize = size;
+        if(localSize>MAX_WRITE_SIZE)localSize = MAX_WRITE_SIZE;
+        if ((read = recv(get(), reinterpret_cast<char*>(b.end() + totalRead), localSize, MSG_DONTWAIT)) < 0) {
+
+            auto err = errno;
                 if(err == EWOULDBLOCK || err == EAGAIN){
-                    pollInfo.revents = 0;
-                    poll(&pollInfo,1,-1);
+                    epoll_wait(ep, &raisedEvents, 1, -1);
                     continue;
                 }
                 std::cerr << "recv failed : " << err << std::endl;
+                close(ep);
                 throw std::exception();
 #endif
             }
             if(read==0){
+                close(ep);
                 throw std::exception();
             }
             totalRead += read;
 	}
+    close(ep);
 	b.size(b.size()+totalRead);
 
 }
-
 void HVFiles::SafeSocket::WriteData(const Buffer& b)const {
 #undef min
 	size_t totalWritten = 0;

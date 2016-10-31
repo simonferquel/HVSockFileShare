@@ -2,7 +2,6 @@
 #define __cdecl
 #include <cstdint>
 
-
 /* GUID handling  */
 
 typedef struct _GUID {
@@ -21,7 +20,7 @@ typedef struct _GUID {
 
 /* HV Socket definitions */
 
-#define AF_HYPERV AF_X25
+#define AF_HYPERV (AF_MAX>43 ? 43 : AF_X25)
 
 #define HV_PROTOCOL_RAW 1
 
