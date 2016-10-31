@@ -1,8 +1,7 @@
 #pragma once
 #include <string>
-#include <initguid.h>
 #include <memory>
-#include "HVListener.h";
+#include <Transport/HVListener.h>
 #include <thread>
 
 namespace HVFiles {
@@ -15,7 +14,6 @@ namespace HVFiles {
 		std::shared_ptr<HVListener> _commandListener;
 		std::thread _sessionListenerThread;
 		std::thread _commandListenerThread;
-		HANDLE _completionPort;
 	public:
 		FileServer(const std::string& root, const GUID& partitionId, const GUID& sessionServiceId, const GUID& commandServiceId);
 		~FileServer();

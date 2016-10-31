@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "FileServer.h"
 #include "SessionPool.h"
 #include <iostream>
@@ -15,25 +14,23 @@ HVFiles::FileServer::FileServer(const std::string & root, const GUID & partition
 	:_root(root),
 	_sessionListener(std::make_shared<HVListener>(partitionId, sessionServiceId)),
 	_commandListener(std::make_shared<HVListener>(partitionId, commandServiceId)),
-	_pool(std::make_shared<SessionPool>()),
-	_completionPort(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0))
+	_pool(std::make_shared<SessionPool>())
 {
 }
 
 HVFiles::FileServer::~FileServer()
 {
-	CloseHandle(_completionPort);
 }
 
-void OnSessionAccepted(SafeSocket&& s, const std::shared_ptr<SessionPool>& pool, HANDLE completionPort);
-void OnCommandAccepted(SafeSocket&& s, const std::shared_ptr<SessionPool>& pool, HANDLE completionPort);
+void OnSessionAccepted(SafeSocket&& s, const std::shared_ptr<SessionPool>& pool);
+void OnCommandAccepted(SafeSocket&& s, const std::shared_ptr<SessionPool>& pool);
 
 void HVFiles::FileServer::Start()
 {
-	_sessionListenerThread = std::thread([listener = _sessionListener, pool = _pool, cp = _completionPort]() {
+	_sessionListenerThread = std::thread([listener = _sessionListener, pool = _pool]() {
 		try {
 			for (;;) {
-				OnSessionAccepted(listener->Accept(), pool, cp);
+				OnSessionAccepted(listener->Accept(), pool);
 			}
 		}
 		catch (std::exception&) {
@@ -42,10 +39,10 @@ void HVFiles::FileServer::Start()
 	});
 
 
-	_commandListenerThread = std::thread([listener = _commandListener, pool = _pool, cp = _completionPort]() {
+	_commandListenerThread = std::thread([listener = _commandListener, pool = _pool]() {
 		try {
 			for (;;) {
-				OnCommandAccepted(listener->Accept(), pool, cp);
+				OnCommandAccepted(listener->Accept(), pool);
 			}
 		}
 		catch (std::exception&) {
@@ -68,11 +65,9 @@ void HVFiles::FileServer::Stop()
 	}
 }
 
-void OnSessionAccepted(SafeSocket && s, const std::shared_ptr<SessionPool>& pool, HANDLE completionPort)
+void OnSessionAccepted(SafeSocket && s, const std::shared_ptr<SessionPool>& pool)
 {
-	create_task([s = std::move(s), pool, completionPort]() {
-		//CreateIoCompletionPort((HANDLE)s.get(), completionPort, 0, 0);
-		//SetFileCompletionNotificationModes((HANDLE)s.get(), FILE_SKIP_SET_EVENT_ON_HANDLE);
+	create_task([s = std::move(s), pool]() {
 		GUID id;
 		if (FAILED(CoCreateGuid(&id))) {
 			std::cerr << "can't create guid" << std::endl;
@@ -89,11 +84,9 @@ void OnSessionAccepted(SafeSocket && s, const std::shared_ptr<SessionPool>& pool
 	});
 }
 
-void OnCommandAccepted(SafeSocket && s, const std::shared_ptr<SessionPool>& pool, HANDLE completionPort)
+void OnCommandAccepted(SafeSocket && s, const std::shared_ptr<SessionPool>& pool)
 {
-	create_task([s = std::move(s), pool, completionPort]() {
-		//CreateIoCompletionPort((HANDLE)s.get(), completionPort, 0, 0);
-		//SetFileCompletionNotificationModes((HANDLE)s.get(), FILE_SKIP_SET_EVENT_ON_HANDLE);
+	create_task([s = std::move(s), pool]() {
 		auto h = s.ReadFixedSize<Messages::Header>();
 		if(h.type != Messages::MessageTypes::Join || h.size != sizeof(Messages::Join)){
 			return;

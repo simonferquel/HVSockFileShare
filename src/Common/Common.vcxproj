@@ -14,7 +14,7 @@
     <ProjectGuid>{9F1175F5-1D15-4459-B577-F2DA5CCE604A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Common</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -77,22 +77,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="SafeSocket.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="..\..\Includes\Common\Helpers.h" />
     <ClInclude Include="..\..\Includes\Common\messages\Echo.h" />
     <ClInclude Include="..\..\Includes\Common\messages\Join.h" />
-    <ClInclude Include="..\Includes\Common\Buffer.h" />
     <ClInclude Include="..\Includes\Common\Ids.h" />
-    <ClInclude Include="..\Includes\Common\LinuxCompat.h" />
     <ClInclude Include="..\Includes\Common\messages\Handshake.h" />
     <ClInclude Include="..\Includes\Common\messages\Header.h" />
     <ClInclude Include="..\Includes\Common\messages\MessageTypes.h" />
-    <ClInclude Include="..\Includes\Common\SafeSocket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

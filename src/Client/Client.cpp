@@ -1,10 +1,8 @@
 // Client.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
 #include <WinSock2.h>
-#include <hvsocket.h>
-#include <ClientLib/Connect.h>
+#include <Transport/Connect.h>
 #include <Common/Ids.h>
 #include <iostream>
 #include <Common/messages/Header.h>
@@ -21,7 +19,7 @@ int main()
 		return -2;
 	}
 
-	auto s = Connect(HV_GUID_LOOPBACK, SessionServiceID);
+	auto s = Connect(HV_GUID_ZERO, SessionServiceID);
 	Messages::Handshake handshake;
 	handshake.maxProtocolVersion = 1;
 	Messages::Header head;
