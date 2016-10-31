@@ -8,6 +8,7 @@ using SOCKET = int;
 #endif
 #include <memory>
 #include <exception>
+#include <functional>
 #include <Common/messages/Header.h>
 #include <Common/messages/MessageTypes.h>
 namespace HVFiles {
