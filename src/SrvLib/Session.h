@@ -1,5 +1,5 @@
 #pragma once
-#include <Common/SafeSocket.h>
+#include <Transport/SafeSocket.h>
 namespace HVFiles {
 	class Session {
 		

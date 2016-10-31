@@ -1,10 +1,9 @@
-#include "stdafx.h"
 #include "Session.h"
+#include <Common/Helpers.h>
 #include <Common/messages/Header.h>
 #include <Common/messages/MessageTypes.h>
 #include <Common/messages/Handshake.h>
 #include <Common/messages/Echo.h>
-#include <Common/Buffer.h>
 #include <iostream>
 #include <chrono>
 using namespace HVFiles;
@@ -32,18 +31,18 @@ void HVFiles::Session::Start()
 	HandshakeResponse response;
 	response.protocolVersion = 1;
 	response.sessionId = _id;
-	_s.WriteWithHeaderFixedSize(response);
+	WriteWithHeaderFixedSize(_s, response);
 }
 void HandleEcho(const SafeSocket& s) {
 	std::cout << "echo..." << std::endl;
 	auto start = std::chrono::high_resolution_clock::now();
 	auto cmd = s.ReadFixedSize<Echo>();
-	auto buf = AcquireBuffer(cmd.dataSize);
-	s.ReadData(cmd.dataSize, *buf);
+	std::unique_ptr<std::uint8_t[]> data = std::make_unique<std::uint8_t[]>(cmd.dataSize);
+	s.ReadData(BufferInfo(data.get(), cmd.dataSize));
 	EchoResponse r;
-	r.dataSize = buf->size();
-	s.WriteWithHeaderFixedSize(r);
-	s.WriteData(*buf);
+	r.dataSize = cmd.dataSize;
+	WriteWithHeaderFixedSize(s, r);
+	s.WriteData(ConstBufferInfo(data.get(), cmd.dataSize));
 	auto end = std::chrono::high_resolution_clock::now();
 	auto durationMS = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	std::cout << "echoed back in " << durationMS.count() << "ms" << std::endl;

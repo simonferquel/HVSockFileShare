@@ -1,9 +1,7 @@
 // Srv.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
 #include <Common/Ids.h>
-#include <Common/Buffer.h>
 #include <Common/Messages/MessageTypes.h>
 #include <Common/Messages/Header.h>
 #include <Common/Messages/Handshake.h>
@@ -13,8 +11,8 @@
 #include <Windows.h>
 #include <Winreg.h> 
 #include <exception>
-#include <hvsocket.h>
 #include "../SrvLib/FileServer.h"
+#include <Transport/LinuxCompat.h>
 
 using namespace std;
 using namespace HVFiles;
@@ -76,7 +74,7 @@ int wmain(int argc, wchar_t* argv[])
 		return -2;
 	}
 
-	FileServer fs("c:\\", HV_GUID_WILDCARD, SessionServiceID, CommandServiceID);
+	FileServer fs("c:\\", HV_GUID_ZERO, SessionServiceID, CommandServiceID);
 	fs.Start();
 
 	cout << "Press enter to stop...";

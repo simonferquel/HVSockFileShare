@@ -1,10 +1,6 @@
 #pragma once
 #include "MessageTypes.h"
-#ifdef _WIN32
-#include <initguid.h>
-#else
-#include <Common/LinuxCompat.h>
-#endif
+#include <Transport/LinuxCompat.h>
 namespace HVFiles {
 	namespace Messages {
 #pragma pack(push,1)
