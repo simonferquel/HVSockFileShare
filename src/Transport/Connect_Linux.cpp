@@ -10,7 +10,7 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
     addr.VmId = partition;
     addr.ServiceId = service;
 	int flags = fcntl(s.get(), F_GETFL, 0);
-	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	fcntl(s.get(), F_SETFL, flags | O_NONBLOCK);
     if (0 != connect(s.get(), reinterpret_cast<const sockaddr*>(&addr), sizeof(addr))) {
 		auto err = errno;
 		if (err != EWOULDBLOCK) {
@@ -27,6 +27,6 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
 			throw ConnectionFailedException(err);
 		}
     }
-	fcntl(fd, F_SETFL, flags);
+	fcntl(s.get(), F_SETFL, flags);
     return s;
 }
