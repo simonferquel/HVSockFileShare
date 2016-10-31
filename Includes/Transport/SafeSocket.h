@@ -1,7 +1,6 @@
 #pragma once
 #ifdef _WIN32
 #include <WinSock2.h>
-#include <ppltasks.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
