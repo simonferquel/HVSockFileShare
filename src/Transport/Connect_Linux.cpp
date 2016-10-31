@@ -13,7 +13,7 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
 	fcntl(s.get(), F_SETFL, flags | O_NONBLOCK);
     if (0 != connect(s.get(), reinterpret_cast<const sockaddr*>(&addr), sizeof(addr))) {
 		auto err = errno;
-		if (err != EWOULDBLOCK) {
+		if (err != EINPROGRESS) {
 			throw ConnectionFailedException(err);
 		}
 		fd_set fds;
