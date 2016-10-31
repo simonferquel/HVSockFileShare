@@ -10,6 +10,9 @@
 #include <Common/messages/MessageTypes.h>
 using namespace HVFiles;
 using namespace std;
+
+DEFINE_GUID(HV_GUID_LOOPBACK, 0xe0e16197, 0xdd56, 0x4a10, 0x91, 0x95, 0x5e, 0xe7, 0xa1, 0x55, 0xa8, 0x38);
+
 int main()
 {
 	auto versionRequested = MAKEWORD(2, 2);
@@ -19,7 +22,7 @@ int main()
 		return -2;
 	}
 
-	auto s = Connect(HV_GUID_ZERO, SessionServiceID);
+	auto s = Connect(HV_GUID_LOOPBACK, SessionServiceID);
 	Messages::Handshake handshake;
 	handshake.maxProtocolVersion = 1;
 	Messages::Header head;
