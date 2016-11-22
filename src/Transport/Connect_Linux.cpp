@@ -22,7 +22,7 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
 		pollInfo.events = POLLOUT;
 		timeval timeout;
 		timeout.tv_sec = 0;
-		auto presults = poll(&pollInfo, 1, 30);
+		auto presults = poll(&pollInfo, 1, 300);
 		if (presults != 1) {
 			// timeout 
 			throw ConnectionFailedException(err);
