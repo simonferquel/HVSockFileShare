@@ -3,7 +3,7 @@
 #include <poll.h>
 
 using namespace HVFiles;
-SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
+SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service, int timeoutMilliseconds) {
     SafeSocket s = socket(AF_HYPERV, SOCK_STREAM, HV_PROTOCOL_RAW);
     SOCKADDR_HV addr;
     addr.Family = AF_HYPERV;
@@ -22,7 +22,7 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
 		pollInfo.events = POLLOUT;
 		timeval timeout;
 		timeout.tv_sec = 0;
-		auto presults = poll(&pollInfo, 1, 300);
+		auto presults = poll(&pollInfo, 1, timeoutMilliseconds);
 		if (presults != 1) {
 			// timeout 
 			throw ConnectionFailedException(err);

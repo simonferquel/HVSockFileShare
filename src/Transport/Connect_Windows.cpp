@@ -1,6 +1,6 @@
 #include <Transport/Connect.h>
 using namespace HVFiles;
-SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
+SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service, int timeoutMilliseconds) {
 	SafeSocket s = WSASocket(AF_HYPERV, SOCK_STREAM, HV_PROTOCOL_RAW, nullptr, 0, WSA_FLAG_OVERLAPPED);
 	SOCKADDR_HV addr;
 	addr.Family = AF_HYPERV;
@@ -19,7 +19,7 @@ SafeSocket HVFiles::Connect(const GUID & partition, const GUID & service) {
 		FD_SET(s.get(), &fds);
 		timeval timeout;
 		timeout.tv_sec = 0;
-		timeout.tv_usec = 1000 * 300; // 300ms is long enough for hv_socks
+		timeout.tv_usec = 1000 * timeoutMilliseconds;
 		if (select(1, nullptr, &fds, nullptr, &timeout) != 1){
 			// timeout 
 			throw ConnectionFailedException(err);

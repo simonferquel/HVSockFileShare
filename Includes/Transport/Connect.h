@@ -18,5 +18,8 @@ namespace HVFiles {
 		}
 		ConnectionFailedException(int errorCode) :  _errorCode(errorCode) {}
 	};
-	SafeSocket Connect(const GUID& partition, const GUID& service);
+	SafeSocket Connect(const GUID& partition, const GUID& service, int timeoutMilliseconds);
+	inline SafeSocket Connect(const GUID& partition, const GUID& service) {
+		return Connect(partition, service, 300);
+	}
 }
