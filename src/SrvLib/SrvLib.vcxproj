@@ -14,7 +14,7 @@
     <ProjectGuid>{B5A1C187-FF2E-4D30-8BE5-38F87459878E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SrvLib</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
